@@ -12,7 +12,7 @@ public class MainActivity extends Activity {
     private static final String TAG = "QuizyApp";
 
     private TextView questionTextView;
-    private Button trueButton, falseButton, previousButton;
+    private Button trueButton, falseButton, previousButton, nextButton;
 
     private Question[] questionBank = new Question[] {
             new Question("The sky is blue.", true),
@@ -32,7 +32,8 @@ public class MainActivity extends Activity {
         questionTextView = findViewById(R.id.question_text_view);
         trueButton = findViewById(R.id.true_button);
         falseButton = findViewById(R.id.false_button);
-        previousButton = findViewById(R.id.previous_button); // New button
+        previousButton = findViewById(R.id.previous_button);
+        nextButton = findViewById(R.id.next_button);// New button
 
         updateQuestion();
 
@@ -56,6 +57,13 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 moveToPreviousQuestion(); // Go to previous question
+            }
+        });
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveToNextQuestion(); // Go to next question
             }
         });
     }
