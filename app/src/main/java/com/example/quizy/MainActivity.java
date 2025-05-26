@@ -1,6 +1,7 @@
 package com.example.quizy;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,8 @@ public class MainActivity extends Activity {
     };
 
     private int currentIndex = 0;
+    private int score = 0;
+    private boolean[] answered = new boolean[questionBank.length]; // To prevent double scoring
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,39 +36,23 @@ public class MainActivity extends Activity {
         trueButton = findViewById(R.id.true_button);
         falseButton = findViewById(R.id.false_button);
         previousButton = findViewById(R.id.previous_button);
-        nextButton = findViewById(R.id.next_button);// New button
+        nextButton = findViewById(R.id.next_button);
 
         updateQuestion();
 
-        trueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkAnswer(true);
-                moveToNextQuestion();
-            }
+        trueButton.setOnClickListener(v -> {
+            checkAnswer(true);
+            moveToNextQuestion();
         });
 
-        falseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkAnswer(false);
-                moveToNextQuestion();
-            }
+        falseButton.setOnClickListener(v -> {
+            checkAnswer(false);
+            moveToNextQuestion();
         });
 
-        previousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moveToPreviousQuestion(); // Go to previous question
-            }
-        });
+        previousButton.setOnClickListener(v -> moveToPreviousQuestion());
 
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                moveToNextQuestion(); // Go to next question
-            }
-        });
+        nextButton.setOnClickListener(v -> moveToNextQuestion());
     }
 
     private void updateQuestion() {
@@ -73,10 +60,19 @@ public class MainActivity extends Activity {
     }
 
     private void moveToNextQuestion() {
-        currentIndex = (currentIndex + 1) % questionBank.length;
-        Log.d(TAG, "Current index: " + currentIndex);
-        updateQuestion();
-        Toast.makeText(this, "Next Question Loading...", Toast.LENGTH_SHORT).show();
+        if (currentIndex == questionBank.length - 1) {
+            // End of quiz: launch ResultActivity
+            Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+            intent.putExtra("quizScore", score);
+            intent.putExtra("totalQuestions", questionBank.length);
+            startActivity(intent);
+            finish();
+        } else {
+            currentIndex++;
+            Log.d(TAG, "Current index: " + currentIndex);
+            updateQuestion();
+            Toast.makeText(this, "Next Question Loading...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void moveToPreviousQuestion() {
@@ -88,12 +84,18 @@ public class MainActivity extends Activity {
 
     private void checkAnswer(boolean userAnswer) {
         boolean correctAnswer = questionBank[currentIndex].isAnswerTrue();
-        if (userAnswer == correctAnswer) {
-            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Answer was Correct.");
+        if (!answered[currentIndex]) {
+            if (userAnswer == correctAnswer) {
+                score++;
+                Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Answer was Correct.");
+            } else {
+                Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "Answer was Incorrect.");
+            }
+            answered[currentIndex] = true;
         } else {
-            Toast.makeText(this, "Incorrect!", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Answer was Incorrect.");
+            Toast.makeText(this, "Already answered.", Toast.LENGTH_SHORT).show();
         }
     }
 }
